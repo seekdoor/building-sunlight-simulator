@@ -171,11 +171,84 @@
 
     // ========== 状态变量 ==========
     let LATITUDE = 36.65;
+    let NORTH_ANGLE = CONFIG.DEFAULTS.NORTH_ANGLE;
     let showOwnOnly = false;
+    let rawData = null;
     let currentData = null;
     let sunlightResults = null; // 存储日照计算结果
     let showHeatmap = false;
     let customDeclination = null; // 存储自定义日期的赤纬角
+
+    function rotatePlanPoint(point, angleDeg) {
+        const rad = angleDeg * Math.PI / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        return {
+            x: point.x * cos - point.y * sin,
+            y: point.x * sin + point.y * cos
+        };
+    }
+
+    function transformProjectData(data, northAngle) {
+        if (!data) return null;
+
+        const normalizedAngle = Utils.normalizeAngle(parseFloat(northAngle));
+        const rotationAngle = -normalizedAngle;
+        const transformed = Utils.deepClone(data);
+        transformed.northAngle = normalizedAngle;
+
+        if (!Array.isArray(transformed.buildings)) {
+            return transformed;
+        }
+
+        transformed.buildings = transformed.buildings.map(building => {
+            const nextBuilding = { ...building };
+
+            if (Array.isArray(building.shape)) {
+                nextBuilding.shape = building.shape.map(point => rotatePlanPoint(point, rotationAngle));
+            }
+
+            if (building.center && typeof building.center.x === 'number' && typeof building.center.y === 'number') {
+                nextBuilding.center = rotatePlanPoint(building.center, rotationAngle);
+            }
+
+            return nextBuilding;
+        });
+
+        return transformed;
+    }
+
+    function formatAngleText(angle) {
+        return Math.abs(Utils.normalizeAngle(angle)).toFixed(1).replace(/\.0$/, '');
+    }
+
+    function rebuildProjectScene() {
+        if (!rawData) return;
+        currentData = transformProjectData(rawData, NORTH_ANGLE);
+        loadBuildings(currentData);
+    }
+
+    function syncLatitudeControls(latitude) {
+        if (typeof latitude !== 'number' || !isFinite(latitude)) return;
+
+        LATITUDE = latitude;
+        document.getElementById('latitudeInput').value = LATITUDE;
+        updateLatDisplay();
+
+        const citySelect = document.getElementById('citySelect');
+        let matched = false;
+        for (const option of citySelect.options) {
+            if (option.dataset.lat && Math.abs(parseFloat(option.dataset.lat) - LATITUDE) < 0.01) {
+                citySelect.value = option.value;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            citySelect.value = '';
+        }
+    }
 
     // ========== 纹理与材质工具 ==========
     function createFacadeTexture(floors, unitsPerFloor) {
@@ -715,12 +788,13 @@
     function initLocationSelector() {
         const citySelect = document.getElementById('citySelect');
         const latInput = document.getElementById('latitudeInput');
-
+        const northAngleInput = document.getElementById('northAngleInput');
         if (typeof generateCityOptions === 'function') {
             citySelect.innerHTML = generateCityOptions('济南');
             LATITUDE = getLatitudeByCity('济南') || 36.65;
             latInput.value = LATITUDE;
         }
+        northAngleInput.value = NORTH_ANGLE;
 
         citySelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -757,7 +831,19 @@
             }
         });
 
+        northAngleInput.addEventListener('change', function() {
+            NORTH_ANGLE = Utils.normalizeAngle(parseFloat(this.value));
+            this.value = NORTH_ANGLE;
+            updateNorthAngleDisplay();
+
+            if (rawData) {
+                rebuildProjectScene();
+                clearSunlightResults();
+            }
+        });
+
         updateLatDisplay();
+        updateNorthAngleDisplay();
     }
 
     function clearSunlightResults() {
@@ -779,26 +865,13 @@
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
-                if (typeof data.latitude === 'number' && isFinite(data.latitude)) {
-                    LATITUDE = data.latitude;
-                    document.getElementById('latitudeInput').value = LATITUDE;
-                    updateLatDisplay();
-
-                    const citySelect = document.getElementById('citySelect');
-                    let matched = false;
-                    for (const option of citySelect.options) {
-                        if (option.dataset.lat && Math.abs(parseFloat(option.dataset.lat) - LATITUDE) < 0.01) {
-                            citySelect.value = option.value;
-                            matched = true;
-                            break;
-                        }
-                    }
-                    if (!matched) {
-                        citySelect.value = '';
-                    }
-                }
-                currentData = data;
-                loadBuildings(data);
+                syncLatitudeControls(data.latitude);
+                updateSun();
+                rawData = data;
+                NORTH_ANGLE = Utils.normalizeAngle(parseFloat(data.northAngle));
+                document.getElementById('northAngleInput').value = NORTH_ANGLE;
+                updateNorthAngleDisplay();
+                rebuildProjectScene();
                 clearSunlightResults();
                 document.getElementById('empty-state').style.display = 'none';
             } catch (err) {
@@ -832,7 +905,6 @@
 
     function loadBuildings(data) {
         clearGroup(buildingsGroup);
-        if (data.latitude) LATITUDE = data.latitude;
 
         if (!data || !Array.isArray(data.buildings) || data.buildings.length === 0) return;
 
@@ -1282,8 +1354,13 @@
     // 尝试加载默认数据
     if (typeof DEFAULT_DATA !== 'undefined') {
         console.log('检测到默认数据，正在加载...');
-        currentData = DEFAULT_DATA;
-        loadBuildings(DEFAULT_DATA);
+        rawData = DEFAULT_DATA;
+        syncLatitudeControls(DEFAULT_DATA.latitude);
+        updateSun();
+        NORTH_ANGLE = Utils.normalizeAngle(parseFloat(DEFAULT_DATA.northAngle));
+        document.getElementById('northAngleInput').value = NORTH_ANGLE;
+        updateNorthAngleDisplay();
+        rebuildProjectScene();
         document.getElementById('empty-state').style.display = 'none';
     } else {
         console.log('未检测到 DEFAULT_DATA 变量，等待手动上传文件');
@@ -1358,7 +1435,8 @@
     function updateDynamicContent() {
         // 更新纬度显示
         updateLatDisplay();
-        
+        updateNorthAngleDisplay();
+
         // 更新时间显示
         const hour = getCurrentHour();
         setTimeText(hour);
@@ -1374,6 +1452,28 @@
         if (latDisplay) {
             const hemisphere = LATITUDE >= 0 ? i18n.t('viewer.northLat') : i18n.t('viewer.southLat');
             latDisplay.textContent = `${i18n.t('viewer.currentLat')}: ${hemisphere} ${Math.abs(LATITUDE).toFixed(2)}°`;
+        }
+    }
+
+    function updateNorthAngleDisplay() {
+        const normalizedAngle = Utils.normalizeAngle(NORTH_ANGLE);
+        const northAngleDisplay = document.getElementById('northAngleDisplay');
+        const orientationText = document.getElementById('orientationText');
+        const angleText = formatAngleText(normalizedAngle);
+        const compactAngle = normalizedAngle.toFixed(1).replace(/\.0$/, '');
+
+        if (northAngleDisplay) {
+            northAngleDisplay.textContent = `${i18n.t('viewer.northAngleLabel')}: ${compactAngle}°`;
+        }
+
+        if (orientationText) {
+            if (Math.abs(normalizedAngle) < 0.01) {
+                orientationText.textContent = i18n.t('viewer.orientationNorthUp');
+            } else if (normalizedAngle > 0) {
+                orientationText.textContent = i18n.t('viewer.orientationClockwise').replace('{0}', angleText);
+            } else {
+                orientationText.textContent = i18n.t('viewer.orientationCounterClockwise').replace('{0}', angleText);
+            }
         }
     }
 

@@ -303,9 +303,20 @@ button:disabled {
     flex: 1;
 }
 
+.location-config .field {
+    display: flex;
+    flex-direction: column;
+}
+
 .location-row select,
 .location-row input {
     margin-bottom: 0;
+}
+
+.location-config .field input,
+.location-config .field select {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* 表格区 */

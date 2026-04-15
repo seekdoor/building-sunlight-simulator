@@ -32,7 +32,7 @@
                 <label data-i18n="viewer.statusLabel">当前状态</label>
                 <div style="font-size: 13px; color: #555; line-height: 1.5;">
                     <span data-i18n="viewer.statusCoord">坐标对齐规划图</span><br>
-                    <span data-i18n="viewer.statusOrientation">方位：</span><span style="color:#e74c3c;font-weight:800;" data-i18n="viewer.statusNorth">↑ 上北下南</span>
+                    <span data-i18n="viewer.statusOrientation">方位：</span><span id="orientationText" style="color:#e74c3c;font-weight:800;">图纸向上为北</span>
                 </div>
             </div>
 
@@ -60,6 +60,12 @@
                         </div>
                     </div>
                     <div class="lat-display" id="latDisplay">当前: 北纬 36.65°</div>
+                    <div class="lat-display" id="northAngleDisplay">北向角: 0°</div>
+                    <div class="field" style="margin-top:10px;">
+                        <span data-i18n="viewer.northAngle">北向角(度)</span>
+                        <input type="number" id="northAngleInput" value="0" step="0.1" min="-180" max="180">
+                        <div class="muted" style="margin-top:5px;" data-i18n="viewer.northAngleHint">相对图纸向上，顺时针为正；修改后会重新校正模型与日照。</div>
+                    </div>
                 </div>
             </div>
 

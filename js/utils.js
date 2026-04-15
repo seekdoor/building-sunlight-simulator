@@ -71,6 +71,19 @@ const Utils = (function() {
     }
 
     /**
+     * 归一化角度到 [-180, 180]
+     * @param {number} angle - 输入角度
+     * @returns {number}
+     */
+    function normalizeAngle(angle) {
+        if (Number.isNaN(angle) || !Number.isFinite(angle)) return 0;
+        let normalized = angle % 360;
+        if (normalized > 180) normalized -= 360;
+        if (normalized <= -180) normalized += 360;
+        return roundTo(normalized, 2);
+    }
+
+    /**
      * 格式化时间显示
      * @param {number} hour - 小时数（可以是小数）
      * @returns {string} 格式化的时间字符串 (HH:MM)
@@ -354,6 +367,7 @@ const Utils = (function() {
         clampInt,
         clampFloat,
         roundTo,
+        normalizeAngle,
         formatTime,
         debounce,
         throttle,

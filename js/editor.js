@@ -20,6 +20,7 @@
     // 位置/纬度配置元素
     const citySelectEl = document.getElementById('citySelect');
     const projectLatEl = document.getElementById('projectLat');
+    const projectNorthAngleEl = document.getElementById('projectNorthAngle');
 
     // 默认参数元素
     const defFloorsEl = document.getElementById('defFloors');
@@ -50,7 +51,7 @@
     const SANITIZE_EPS = CONFIG.EDITOR.SANITIZE_EPSILON;
 
     // ========== 工具函数（使用 Utils 模块）==========
-    const { distance, pointsEqual, clampInt, clampFloat, getPolygonCenter } = Utils;
+    const { distance, pointsEqual, clampInt, clampFloat, getPolygonCenter, normalizeAngle } = Utils;
 
     /**
      * 多边形净化 - 移除重复点、过短边、共线点
@@ -728,10 +729,13 @@
 
         const round2 = n => Utils.roundTo(n, 2);
         const lat = parseFloat(projectLatEl.value) || CONFIG.DEFAULTS.LATITUDE;
+        const northAngle = normalizeAngle(parseFloat(projectNorthAngleEl.value));
+        projectNorthAngleEl.value = northAngle;
 
         const exportData = {
             version: CONFIG.APP.VERSION,
             latitude: lat,
+            northAngle,
             scaleRatio: scaleRatio,
             origin: { x: centerX, y: centerY },
             buildings: buildings.map(b => {
@@ -766,6 +770,10 @@
             defFloorHeightEl.value = clampFloat(parseFloat(defFloorHeightEl.value), validation.FLOOR_HEIGHT.MIN, validation.FLOOR_HEIGHT.MAX, CONFIG.DEFAULTS.FLOOR_HEIGHT);
             defUnitsEl.value = clampInt(parseInt(defUnitsEl.value), validation.UNITS.MIN, validation.UNITS.MAX, CONFIG.DEFAULTS.UNITS_PER_FLOOR);
         });
+    });
+
+    projectNorthAngleEl.addEventListener('change', () => {
+        projectNorthAngleEl.value = normalizeAngle(parseFloat(projectNorthAngleEl.value));
     });
 
     // ========== 面板拖拽调整高度 ==========
@@ -851,6 +859,7 @@
     window.addEventListener('load', () => {
         initCitySelector();
         initLanguageSwitcher();
+        projectNorthAngleEl.value = CONFIG.DEFAULTS.NORTH_ANGLE;
 
         const initialTop = Math.max(160, Math.min(window.innerHeight * 0.6, window.innerHeight * 0.44));
         topPane.style.height = initialTop + 'px';

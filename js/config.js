@@ -22,6 +22,7 @@ const CONFIG = (function() {
         DEFAULTS: {
             LATITUDE: 36.65,           // 默认纬度（济南）
             CITY: '济南',              // 默认城市
+            NORTH_ANGLE: 0,            // 默认北向角（相对图纸向上，顺时针为正）
             FLOORS: 18,                // 默认层数
             FLOOR_HEIGHT: 3,           // 默认层高（米）
             UNITS_PER_FLOOR: 2,        // 默认每层户数
@@ -112,6 +113,7 @@ const CONFIG = (function() {
         // 验证范围
         VALIDATION: {
             LATITUDE: { MIN: -90, MAX: 90 },
+            NORTH_ANGLE: { MIN: -180, MAX: 180 },
             FLOORS: { MIN: 1, MAX: 300 },
             FLOOR_HEIGHT: { MIN: 1, MAX: 20 },
             UNITS: { MIN: 1, MAX: 50 }

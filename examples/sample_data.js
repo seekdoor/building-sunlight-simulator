@@ -3,6 +3,7 @@
 const DEFAULT_DATA = {
   "version": 1.6,
   "latitude": 36.65, // 示例：济南纬度
+  "northAngle": 0,
   "scaleRatio": 0.4832847793689541,
   "origin": {
     "x": 306.03376383903776,

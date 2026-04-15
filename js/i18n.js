@@ -42,14 +42,20 @@ const i18n = (function() {
                 statusCoord: '坐标对齐规划图',
                 statusOrientation: '方位：',
                 statusNorth: '↑ 上北下南',
-                
+                orientationNorthUp: '图纸向上为北',
+                orientationClockwise: '图纸正北顺时针偏转 {0}°',
+                orientationCounterClockwise: '图纸正北逆时针偏转 {0}°',
+
                 // 控制面板
                 step1: '1. 导入数据',
                 selectJson: '📂 选择 JSON 文件',
-                
+
                 step2: '2. 项目位置',
                 selectCity: '选择城市',
                 inputLatitude: '手动输入纬度',
+                northAngle: '北向角(度)',
+                northAngleLabel: '北向角',
+                northAngleHint: '相对图纸向上，顺时针为正；修改后会重新校正模型与日照。',
                 currentLat: '当前',
                 northLat: '北纬',
                 southLat: '南纬',
@@ -146,6 +152,8 @@ const i18n = (function() {
                 projectLocation: '📍 项目位置（用于日照计算）',
                 selectCity: '选择城市',
                 orInputLat: '或输入纬度',
+                northAngle: '北向角(度)',
+                northAngleHint: '相对图纸向上，顺时针为正；0° 表示上北下南。',
                 defaultParams: '新楼栋默认参数:',
                 defaultFloors: '默认层数',
                 defaultFloorHeight: '默认层高(米)',
@@ -209,14 +217,20 @@ const i18n = (function() {
                 statusCoord: 'Coordinates aligned with plan',
                 statusOrientation: 'Orientation:',
                 statusNorth: '↑ North Up',
-                
+                orientationNorthUp: 'Plan up is north',
+                orientationClockwise: 'Plan north is rotated {0}° clockwise',
+                orientationCounterClockwise: 'Plan north is rotated {0}° counterclockwise',
+
                 // Control panel
                 step1: '1. Import Data',
                 selectJson: '📂 Select JSON File',
-                
+
                 step2: '2. Project Location',
                 selectCity: 'Select City',
                 inputLatitude: 'Manual Input Latitude',
+                northAngle: 'North Angle (deg)',
+                northAngleLabel: 'North Angle',
+                northAngleHint: 'Relative to plan up, clockwise is positive. Changes will realign geometry and sunlight.',
                 currentLat: 'Current',
                 northLat: 'N',
                 southLat: 'S',
@@ -313,6 +327,8 @@ const i18n = (function() {
                 projectLocation: '📍 Project Location (for sunlight calculation)',
                 selectCity: 'Select City',
                 orInputLat: 'Or Input Latitude',
+                northAngle: 'North Angle (deg)',
+                northAngleHint: 'Relative to plan up, clockwise is positive; 0° means north-up.',
                 defaultParams: 'Default Parameters for New Buildings:',
                 defaultFloors: 'Default Floors',
                 defaultFloorHeight: 'Default Floor Height (m)',
