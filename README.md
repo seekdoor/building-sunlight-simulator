@@ -193,6 +193,12 @@ building-sunlight-simulator/
 
 ---
 
+## 🙏 致谢
+
+多立面采样、热力图贴附、分户配置与整户交互这部分能力的演进，参考了 [@wingkinl](https://github.com/wingkinl) 基于 MIT License 发布的 Fork 项目 [building-sunlight-simulator](https://github.com/wingkinl/building-sunlight-simulator) 中的相关实现与思路，在此表示感谢。
+
+---
+
 ## 📄 License
 
 [MIT License](LICENSE) © 2026 SeanWong17
